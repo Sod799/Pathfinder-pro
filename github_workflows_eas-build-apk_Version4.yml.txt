@@ -1,0 +1,21 @@
+name: EAS Build APK (trial)
+on:
+  workflow_dispatch
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+      - run: npm ci
+      - run: npm install -g eas-cli
+      - env:
+          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+        run: eas build --platform android --profile trial --non-interactive --output json > android_build.json
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-trial-apk
+          path: $(jq -r '.artifacts[0].url' android_build.json)
